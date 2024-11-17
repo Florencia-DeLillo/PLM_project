@@ -9,6 +9,7 @@ TSV_FILE = 'uniprot_data.csv'
 OUTPUT_DIR_REPS = ""
 OUTPUT_DIR_LOGI = ""
 MODEL = 'esm2'
+REP_LAYER: 6
 
 # Detect device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -41,9 +42,9 @@ for n, batch in enumerate(dataloader):
                                                               names = names,
                                                               device=device,
                                                               model=MODEL,
-                                                              rep_layer=6)
+                                                              rep_layer=REP_LAYER)
 
-    seq_reps = get_seq_rep(results, batch_lens, layers=6)
+    seq_reps = get_seq_rep(results, batch_lens, layers=REP_LAYER)
     seq_logits = get_logits(results)
 
     for i, (resp, logits) in enumerate(zip(seq_reps, seq_logits)):
