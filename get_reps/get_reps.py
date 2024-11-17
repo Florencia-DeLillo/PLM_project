@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 from data_utils import ProteinDataset, TaxonIdSampler, get_seq_rep, get_logits
+from token_mask import mask_seq
 
 BATCH_SIZE = 5
 TSV_FILE = 'uniprot_data.csv'
@@ -33,8 +34,13 @@ dataset_size = len(dataloader)
 
 for n, batch in enumerate(dataloader):
 
-    seqs = [item['sequence'] for item in batch]
+    if TYPE == "reps":
+        seqs = [item['sequence'] for item in batch]
+    elif TYPE == "logi":
+        seqs = mask_seq(batch, BATCH_SIZE, n)
+    else: raise KeyError
     names = [item['protein_id'] for item in batch]
+
     data = list(zip(names, seqs))
     
     model, alphabet = MODEL
@@ -45,11 +51,6 @@ for n, batch in enumerate(dataloader):
  
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
     batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
- 
-    # masking here on tokens WITH SEED CONTROL (n)
-    #
-    # import mask_tokens from token_mask
-    # batch_tokens = mask_tokens(batch_tokens, alphabet, n)
 
     # get results
     with torch.no_grad():
@@ -59,6 +60,8 @@ for n, batch in enumerate(dataloader):
         res = get_seq_rep(results, batch_lens, layers=REP_LAYER)
     elif TYPE == "logi":
         res = get_logits(results)
+    else:
+        raise KeyError
 
     for i, res in enumerate(res):
         torch.save(res, f"{OUTPUT_DIR}{names[i]}_{TYPE}.pt")
