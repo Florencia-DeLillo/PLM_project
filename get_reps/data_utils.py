@@ -41,7 +41,7 @@ def esm_compute(seqs: list, names: list=None, model: Union[str, torch.nn.Module]
     # load model
     if isinstance(model, str):
         if model == "esm2":
-            model, alphabet = esm.pretrained.esm2_t33_650M_UR50D()
+            model, alphabet = esm.pretrained.esm2_t6_8M_UR50D()
         elif model == "esm1v":
             model, alphabet = esm.pretrained.esm1v_t33_650M_UR90S()
         else:
@@ -76,11 +76,11 @@ def esm_compute(seqs: list, names: list=None, model: Union[str, torch.nn.Module]
  
     return results, batch_lens, batch_labels, alphabet
 
-def get_seq_rep(results, batch_lens):
+def get_seq_rep(results, batch_lens, layers):
     """
     Get sequence representations from esm_compute
     """
-    token_representations = results["representations"][33]
+    token_representations = results["representations"][layers]
  
     # Generate per-sequence representations via averaging
     sequence_representations = []
@@ -113,8 +113,6 @@ class ProteinDataset(Dataset):
     def __init__(self, data):
 
         self.data = data
-        data[' length'] = data[' length'].str.replace(r'\^\^<.*?>', '', regex=True).astype(int)
-        data[' taxon'] = data[' taxon'].str.extract(r'h.*/(\d+)/?$')[0].astype(int)
     def __len__(self):
 
         return len(self.data)
@@ -125,16 +123,16 @@ class ProteinDataset(Dataset):
         item = self.data.iloc[index]
 
         # Extract relevant fields
-        sequence = item[' sequence']  # The protein sequence
-        length = item[' length']   # Length of the sequence
-        taxon_id = item[' taxon']  # Taxon ID
-        primary_accession = item[' proteinid']  # Primary accession
+        sequence = item['sequence']  # The protein sequence
+        length = item['sequence_length']   # Length of the sequence
+        taxon_id = item['taxon_id']  # Taxon ID
+        primary_accession = item['sequence_id']  # Primary accession
 
         return {
             'sequence': sequence,  # Return sequence as a string (you could modify this later)
             'length': length,
             'taxon_id': taxon_id,
-            'primary_accession': primary_accession
+            'protein_id': primary_accession
         }
 
 
