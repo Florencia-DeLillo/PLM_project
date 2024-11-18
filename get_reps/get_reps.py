@@ -1,6 +1,7 @@
 import esm
 import pandas as pd
 import torch
+import os
 from torch.utils.data import DataLoader
 from data_utils import ProteinDataset, TaxonIdSampler, get_seq_rep, get_logits
 from token_mask import mask_seq
@@ -63,7 +64,7 @@ for n, batch in enumerate(dataloader):
     else:
         raise KeyError
 
-    for i, res in enumerate(res):
-        torch.save(res, f"{OUTPUT_DIR}{names[i]}_{TYPE}.pt")
+    # save the tensor as whole batch
+    torch.save(res, os.path.join(OUTPUT_DIR, f"batch_{n+1}_{TYPE}.pt"))
 
-    print(f"[{(n+1)/dataset_size*100:.4f}%]", "batch ", n+1, " saved.")
+    print(f"[{(n+1)/dataset_size*100:.2f}%]", "batch ", n+1, " saved.")
