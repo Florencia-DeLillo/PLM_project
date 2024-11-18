@@ -4,11 +4,13 @@ import torch
 import os
 from torch.utils.data import DataLoader
 from data_utils import ProteinDataset, TaxonIdSampler, get_seq_rep, get_logits
-from token_mask import mask_seq
+import multiprocessing
+from token_mask import mask_single
 
 BATCH_SIZE = 4
+SEQ_MAX_LEN = 512
 print(BATCH_SIZE)
-TSV_FILE = '../data/raw/uniprot_data_500k_sampled.csv'
+CSV_FILE = '../data/raw/uniprot_data_500k_sampled.csv'
 OUTPUT_DIR = "../data/outputs/teacher_reps/"
 MODEL = esm.pretrained.esm2_t30_150M_UR50D()
 REP_LAYER= 30 #ensure it matches the model
@@ -18,8 +20,8 @@ TYPE = "reps" # reps or logi
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Available device: ", device)
 
-collection = pd.read_csv(TSV_FILE)
-dataset = ProteinDataset(collection)
+collection = pd.read_csv(CSV_FILE)
+dataset = ProteinDataset(collection, SEQ_MAX_LEN)
 sampler = TaxonIdSampler(dataset, batch_size=BATCH_SIZE, shuffle=True)
 dataloader = DataLoader(dataset, batch_sampler=sampler, collate_fn=lambda x: x, shuffle=False)
 
@@ -40,8 +42,13 @@ for n, batch in enumerate(dataloader):
         seqs = [item['sequence'] for item in batch]
         print(len(seqs[0]))
     elif TYPE == "logi":
-        seqs = mask_seq(batch, BATCH_SIZE, n)
-    else: raise KeyError
+        # perform masking
+        batch_seed = n*BATCH_SIZE
+        with multiprocessing.Pool() as pool:
+            seqs = pool.starmap(mask_single, [(i, item, batch_seed) for i, item in enumerate(batch)]) 
+    else: 
+        raise KeyError
+    
     names = [item['protein_id'] for item in batch]
 
     data = list(zip(names, seqs))

@@ -110,9 +110,10 @@ def get_taxon_sequence_data(collection):
 
 class ProteinDataset(Dataset):
 
-    def __init__(self, data):
+    def __init__(self, data, max_size):
 
-        self.data = data[data['sequence_length'] <= 512]
+        self.max_size = max_size
+        self.data = data[data['sequence_length'] <= max_size]
 
     def __len__(self):
 
