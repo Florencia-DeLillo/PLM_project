@@ -19,7 +19,7 @@ def mask_seq(batch, batch_size, n):
     for i, item in enumerate(batch):
         seq = item['sequence']
         random.seed(n * batch_size + i)
-        chain = seq.split()
+        chain = list(seq)
         seq_len = len(chain)
         num_to_mask = max(1, int(round(0.15 * seq_len)))
         mask_indices = random.sample(range(seq_len), num_to_mask)
