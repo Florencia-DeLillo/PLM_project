@@ -6,9 +6,9 @@ from torch.utils.data import DataLoader
 from data_utils import ProteinDataset, TaxonIdSampler, get_seq_rep, get_logits
 from token_mask import mask_seq
 
-BATCH_SIZE = 5
-TSV_FILE = 'uniprot_data.csv'
-OUTPUT_DIR = ""
+BATCH_SIZE = 60
+TSV_FILE = '../data/raw/uniprot_data_500k_sampled.csv'
+OUTPUT_DIR = "../data/outputs/teacher_reps/"
 MODEL = esm.pretrained.esm2_t33_650M_UR50D()
 REP_LAYER: 33 #ensure it matches the model
 TYPE = "reps" # reps or logi
