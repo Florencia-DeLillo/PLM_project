@@ -6,11 +6,12 @@ from torch.utils.data import DataLoader
 from data_utils import ProteinDataset, TaxonIdSampler, get_seq_rep, get_logits
 from token_mask import mask_seq
 
-BATCH_SIZE = 60
+BATCH_SIZE = 4
+print(BATCH_SIZE)
 TSV_FILE = '../data/raw/uniprot_data_500k_sampled.csv'
 OUTPUT_DIR = "../data/outputs/teacher_reps/"
-MODEL = esm.pretrained.esm2_t33_650M_UR50D()
-REP_LAYER: 33 #ensure it matches the model
+MODEL = esm.pretrained.esm2_t30_150M_UR50D()
+REP_LAYER= 30 #ensure it matches the model
 TYPE = "reps" # reps or logi
 
 # Detect device
@@ -37,6 +38,7 @@ for n, batch in enumerate(dataloader):
 
     if TYPE == "reps":
         seqs = [item['sequence'] for item in batch]
+        print(len(seqs[0]))
     elif TYPE == "logi":
         seqs = mask_seq(batch, BATCH_SIZE, n)
     else: raise KeyError
@@ -66,5 +68,6 @@ for n, batch in enumerate(dataloader):
 
     # save the tensor as whole batch
     torch.save(res, os.path.join(OUTPUT_DIR, f"batch_{n+1}_{TYPE}.pt"))
-
+    
     print(f"[{(n+1)/dataset_size*100:.2f}%]", "batch ", n+1, " saved.")
+    torch.cuda.empty_cache()

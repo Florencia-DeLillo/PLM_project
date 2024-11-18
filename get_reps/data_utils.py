@@ -112,7 +112,8 @@ class ProteinDataset(Dataset):
 
     def __init__(self, data):
 
-        self.data = data
+        self.data = data[data['sequence_length'] <= 512]
+
     def __len__(self):
 
         return len(self.data)
