@@ -1,6 +1,6 @@
 import random
 
-def mask_single(i, item, batch_seed):
+def mask_single(i, item, batch_seed, only_masked):
     """
     [!] Worker process, masking individual sequence in batch in a parralerized manner
     Performs masking on sequence.
@@ -44,6 +44,9 @@ def mask_single(i, item, batch_seed):
         else:
             pass  # Leave the token unchanged
 
-    masked_seq = "".join(chain)
+    if only_masked:
+        masked_seq = [chain[i] for i in mask_indices]
+    else:
+        masked_seq = "".join(chain)
 
     return masked_seq

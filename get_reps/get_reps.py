@@ -7,14 +7,23 @@ from data_utils import ProteinDataset, TaxonIdSampler, get_seq_rep, get_logits
 import multiprocessing
 from token_mask import mask_single
 
+# BATCH_SIZE = 8
+# SEQ_MAX_LEN = 256
+# #print(BATCH_SIZE)
+# CSV_FILE = '../data/raw/uniprot_data_500k_sampled_250.csv'
+# OUTPUT_DIR = "../data/outputs/teacher_reps/"
+# MODEL = esm.pretrained.esm2_t33_650M_UR50D()
+# REP_LAYER= 33 #ensure it matches the model
+# TYPE = "reps" # reps or logi
+
 BATCH_SIZE = 8
 SEQ_MAX_LEN = 256
-#print(BATCH_SIZE)
 CSV_FILE = '../data/raw/uniprot_data_500k_sampled_250.csv'
-OUTPUT_DIR = "../data/outputs/teacher_reps/"
+OUTPUT_DIR = "../data/outputs/teacher_logi/"
 MODEL = esm.pretrained.esm2_t33_650M_UR50D()
 REP_LAYER= 33 #ensure it matches the model
-TYPE = "reps" # reps or logi
+TYPE = "logi" # reps or logi
+ONLY_MASKED = True # should only masked positions be saved
 
 # Detect device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -45,7 +54,7 @@ for n, batch in enumerate(dataloader):
         # perform masking
         batch_seed = n*BATCH_SIZE
         with multiprocessing.Pool() as pool:
-            seqs = pool.starmap(mask_single, [(i, item, batch_seed) for i, item in enumerate(batch)]) 
+            seqs = pool.starmap(mask_single, [(i, item, batch_seed, ONLY_MASKED) for i, item in enumerate(batch)]) 
     else: 
         raise KeyError
     
