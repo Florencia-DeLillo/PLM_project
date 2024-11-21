@@ -7,13 +7,13 @@ from data_utils import ProteinDataset, TaxonIdSampler, get_seq_rep, get_logits
 import multiprocessing
 from token_mask import mask_single
 
-BATCH_SIZE = 4
-SEQ_MAX_LEN = 512
-print(BATCH_SIZE)
-CSV_FILE = '../data/raw/uniprot_data_500k_sampled.csv'
+BATCH_SIZE = 8
+SEQ_MAX_LEN = 256
+#print(BATCH_SIZE)
+CSV_FILE = '../data/raw/uniprot_data_500k_sampled_250.csv'
 OUTPUT_DIR = "../data/outputs/teacher_reps/"
-MODEL = esm.pretrained.esm2_t30_150M_UR50D()
-REP_LAYER= 30 #ensure it matches the model
+MODEL = esm.pretrained.esm2_t33_650M_UR50D()
+REP_LAYER= 33 #ensure it matches the model
 TYPE = "reps" # reps or logi
 
 # Detect device
@@ -35,12 +35,12 @@ dataloader = DataLoader(dataset, batch_sampler=sampler, collate_fn=lambda x: x, 
 #raise NotImplementedError
 
 dataset_size = len(dataloader)
-
+print(dataset_size)
 for n, batch in enumerate(dataloader):
 
     if TYPE == "reps":
         seqs = [item['sequence'] for item in batch]
-        print(len(seqs[0]))
+        #print(len(seqs[0]))
     elif TYPE == "logi":
         # perform masking
         batch_seed = n*BATCH_SIZE
@@ -76,5 +76,5 @@ for n, batch in enumerate(dataloader):
     # save the tensor as whole batch
     torch.save(res, os.path.join(OUTPUT_DIR, f"batch_{n+1}_{TYPE}.pt"))
     
-    print(f"[{(n+1)/dataset_size*100:.2f}%]", "batch ", n+1, " saved.")
+    #print(f"[{(n+1)/dataset_size*100:.2f}%]", "batch ", n+1, " saved.")
     torch.cuda.empty_cache()
