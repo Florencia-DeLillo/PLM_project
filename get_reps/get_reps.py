@@ -23,7 +23,6 @@ OUTPUT_DIR = "../data/outputs/teacher_logi/"
 MODEL = esm.pretrained.esm2_t33_650M_UR50D()
 REP_LAYER= 33 #ensure it matches the model
 TYPE = "logi" # reps or logi
-ONLY_MASKED = True # should only masked positions be saved
 
 # Detect device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -54,7 +53,7 @@ for n, batch in enumerate(dataloader):
         # perform masking
         batch_seed = n*BATCH_SIZE
         with multiprocessing.Pool() as pool:
-            masking = pool.starmap(mask_single, [(i, item, batch_seed, ONLY_MASKED) for i, item in enumerate(batch)]) 
+            masking = pool.starmap(mask_single, [(i, item, batch_seed) for i, item in enumerate(batch)]) 
         seqs, masked_pos = zip(*masking)
     else: 
         raise KeyError
