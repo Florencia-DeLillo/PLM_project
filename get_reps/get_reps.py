@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from data_utils import ProteinDataset, TaxonIdSampler, get_seq_rep, get_logits
 import multiprocessing
 from token_mask import mask_single
+from torch.nn.utils.rnn import pad_sequence
 
 # BATCH_SIZE = 8
 # SEQ_MAX_LEN = 256
@@ -79,11 +80,13 @@ for n, batch in enumerate(dataloader):
         res = get_seq_rep(results, batch_lens, layers=REP_LAYER)
     elif TYPE == "logi":
         res = get_logits(results)
-        # create tensor mask based on masking positions for indivudal sequences
-        mask = torch.zeros(res.shape[:2], dtype=torch.bool)  # (batch_size x seq_length)
+        # trim logits into just masking positions
+        masked_logi = []
         for i, positions in enumerate(masked_pos):
-            mask[i, positions] = True
-        res = res[mask]
+            positions = [i+1 for i in positions] #account for <str> token
+            masked_logi.append(res[i, positions, :])
+        # stack into a tensor with padding (seq have different number of masked pos)
+        res = pad_sequence(masked_logi, batch_first=True, padding_value=0.0)
     else:
         raise KeyError
 

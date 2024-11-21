@@ -16,6 +16,12 @@ def mask_single(i, item, batch_seed):
 
     vocab = ['L', 'A', 'G', 'V', 'S', 'E', 'R', 'T', 'I', 'D', 'P', 'K', 'Q', 'N', 'F', 'Y', 'M', 'H', 'W', 'C', 'X', 'B', 'U', 'Z', 'O']
 
+    def mutate(org):
+        new = org
+        while new == org:
+            new = random.choice(vocab)
+        return new
+
     seq = item['sequence']
     random.seed(batch_seed + i)
     chain = list(seq)
@@ -42,7 +48,7 @@ def mask_single(i, item, batch_seed):
         if action == 'mask':
             chain[idx] = '<mask>'
         elif action == 'random':
-            chain[idx] = random.choice(vocab)
+            chain[idx] = mutate(chain[idx])
         else:
             pass  # Leave the token unchanged
 
