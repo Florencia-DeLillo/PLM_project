@@ -54,7 +54,8 @@ for n, batch in enumerate(dataloader):
         # perform masking
         batch_seed = n*BATCH_SIZE
         with multiprocessing.Pool() as pool:
-            seqs = pool.starmap(mask_single, [(i, item, batch_seed, ONLY_MASKED) for i, item in enumerate(batch)]) 
+            masking = pool.starmap(mask_single, [(i, item, batch_seed, ONLY_MASKED) for i, item in enumerate(batch)]) 
+        seqs, masked_pos = zip(*masking)
     else: 
         raise KeyError
     
@@ -79,6 +80,11 @@ for n, batch in enumerate(dataloader):
         res = get_seq_rep(results, batch_lens, layers=REP_LAYER)
     elif TYPE == "logi":
         res = get_logits(results)
+        # create tensor mask based on masking positions for indivudal sequences
+        mask = torch.zeros(res.shape[:2], dtype=torch.bool)  # (batch_size x seq_length)
+        for i, positions in enumerate(masked_pos):
+            mask[i, positions] = True
+        res = res[mask]
     else:
         raise KeyError
 

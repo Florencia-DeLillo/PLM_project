@@ -1,15 +1,17 @@
 import random
 
-def mask_single(i, item, batch_seed, only_masked):
+def mask_single(i, item, batch_seed):
     """
     [!] Worker process, masking individual sequence in batch in a parralerized manner
     Performs masking on sequence.
-        batch: (item of DataLoader) 
-        n: (int) batch iteration for random.seed() control
+        i: (enumerate(batch)[0]) seq position for seed control
+        item: (enumerate(batch)[1]) single seq from batch
+        batch_seed: (BATCH_NUM*BATCH_SIZE) unique seed for each batch
     Masking rules of 15% of each sequence:
         80%: mask
         10%: random mutation
         10%: unchanged
+    Outputs a tuple of (masked_seq, mask_indices) of type (str, list(int)).
     """
 
     vocab = ['L', 'A', 'G', 'V', 'S', 'E', 'R', 'T', 'I', 'D', 'P', 'K', 'Q', 'N', 'F', 'Y', 'M', 'H', 'W', 'C', 'X', 'B', 'U', 'Z', 'O']
@@ -44,9 +46,6 @@ def mask_single(i, item, batch_seed, only_masked):
         else:
             pass  # Leave the token unchanged
 
-    if only_masked:
-        masked_seq = [chain[i] for i in mask_indices]
-    else:
-        masked_seq = "".join(chain)
+    masked_seq = "".join(chain)
 
-    return masked_seq
+    return masked_seq, mask_indices
