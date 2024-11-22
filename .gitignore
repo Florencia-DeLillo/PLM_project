@@ -5,6 +5,7 @@ uniref100.xml.gz
 uniref100.xml
 data/
 
+get_reps/nohup.out
 #data types
 
 *.pt
